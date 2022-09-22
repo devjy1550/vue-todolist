@@ -1,0 +1,39 @@
+<template>
+  <div>
+    {{ name }}
+    <br />
+    <button class="btn btn-primary" @click="updateName">변경</button>
+    <br />
+    {{ age.age }}
+    <br />
+    <button class="btn btn-danger" @click="updateAge">나이냠냠</button>
+  </div>
+  <hr />
+  <input ::type="text" :value="name" />
+</template>
+
+<script>
+import { reactive, ref } from "vue";
+// ref를 쓰지않으면 데이터자체는 변하나 화면상의 갱신은 되지않을가능성이 높음
+
+export default {
+  setup() {
+    const name = ref("홍길동");
+    // name.value = "고길동";
+    const updateName = () => {
+      name.value = "박길동";
+    };
+    const age = reactive({
+      age: 30,
+    });
+    const updateAge = () => {
+      age.age = age.age + 3;
+    };
+    return { name, updateName, age, updateAge };
+  },
+};
+</script>
+<style>
+#app {
+}
+</style>
