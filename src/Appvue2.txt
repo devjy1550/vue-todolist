@@ -1,0 +1,173 @@
+<template>
+  <div class="container">
+    <h2>To Do List</h2>
+    <!-- <ToDoForm 이벤트발생 = "App에서 처리/> -->
+    <!-- ㅎ할일검색폼 -->
+    <input
+      type="text"
+      class="form-control"
+      v-model="searchText"
+      placeholder="Search"
+    />
+    <!-- 할일입력창 -->
+    <ToDoForm @add-todo="addToDo" />
+
+    <!--서버에러 출력  -->
+    <div style="color: red">{{ error }}</div>
+
+    <!-- 목록없음안내 -->
+    <div v-if="!todos.length">추가된 ToDo 가 없습니다.</div>
+    <ToDoList
+      :todos="filterTodos"
+      @delete-todo="deleteTodo"
+      @toggle-todo="toggleTodo"
+    />
+    <!-- 페이지네이션 -->
+    <nav aria-label="Page navigation example">
+      <ul class="pagination">
+        <li class="page-item"><a href="#" class="page-link">Previous</a></li>
+        <li class="page-item"><a href="#" class="page-link">1</a></li>
+        <li class="page-item"><a href="#" class="page-link">2</a></li>
+        <li class="page-item"><a href="#" class="page-link">3</a></li>
+        <li class="page-item"><a href="#" class="page-link">4</a></li>
+        <li class="page-item"><a href="#" class="page-link">5</a></li>
+        <li class="page-item"><a href="#" class="page-link">Next</a></li>
+      </ul>
+    </nav>
+  </div>
+</template>
+<script>
+import axios from "axios";
+import { ref, computed } from "vue";
+import ToDoForm from "./components/ToDoSimpleForm.vue";
+import ToDoList from "./components/ToDoList.vue";
+
+export default {
+  components: {
+    ToDoForm,
+    ToDoList,
+  },
+  setup() {
+    // const hasError = ref(false);      TDSF.vue로 옮겨줌 ㄱㄱㄱㄱㄱㄱㄱㄱㄱㄱㄱㄱㄱㄱ
+    // const todo = ref("");     TDSF.vue로 옮겨줌  ㄱㄱㄱㄱㄱㄱㄱㄱㄱㄱㄱㄱㄱㄱ
+    const todos = ref([]);
+
+    // pagination 구현
+    // 전체목록수
+    const totalCount = ref(0);
+    //페이지당 보여줄 개수
+    const limit = 5;
+    // 현재페이지
+    const page = ref(1);
+
+    const totalPgae = ref(0);
+
+    const searchText = ref("");
+    const filterTodos = computed(() => {
+      if (searchText.value) {
+        return todos.value.filter((todo) => {
+          return todo.subject.includes(searchText.value);
+        });
+      }
+      return todos.value;
+    });
+
+    const getTodo = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/todos");
+        todos.value = response.data;
+        // 총목록수
+        totalCount.value = 0;
+        page.value = 1;
+        console.log(limit);
+        totalPgae.value = 0;
+      } catch (err) {
+        error.value = "서버 목록 호출에 실패했습니다. 잠시 뒤 이용해주세요.";
+      }
+    };
+
+    getTodo();
+
+    // const todoStyle = { textDecoration: "line-through", color: "gray" };
+    // const onSubmit = () => {
+    //   if (todo.value === "") {
+    //     hasError.value = true;
+    //   } else {
+    //     hasError.value = false;
+    //     todos.value.push({
+    //       id: Date.now(),
+    //       subject: todo.value,
+    //       complete: false,
+    //     });
+    //   }
+    //   todo.value = "";
+    // };      TDSF.vue로 옮겨줌  ㄱㄱㄱㄱㄱㄱㄱㄱㄱㄱㄱㄱㄱㄱ
+    const error = ref("");
+
+    const addToDo = async (todo) => {
+      try {
+        await axios.post("http://localhost:3000/todos", {
+          id: todo.id,
+          subject: todo.subject,
+          complete: todo.complete,
+        });
+        todos.value.push(todo);
+      } catch (err) {
+        error.value = "서버 데이터 저장 실패";
+      }
+    };
+    const deleteTodo = async (index) => {
+      try {
+        //현재 index는 배열인덱스번호 0,1,2,3,4 가 전송됨.
+        // 실제 저장되어있는 id를 파악함.
+        const id = todos.value[index].id;
+
+        await axios.delete("http://localhost:3000/todos/" + id);
+        todos.value.splice(index, 1);
+      } catch (err) {
+        error.value = "삭제요청이 거부되었습니다.";
+      }
+    };
+    const toggleTodo = async (index) => {
+      try {
+        // 어느데이터를 수정할것인가를 전달해야함
+        // 업데이트할 내용을 전달함
+        const id = todos.value[index].id;
+        const complete = !todos.value[index].complete;
+        await axios.patch("http://localhost:3000/todos/" + id, {
+          // complete: complete,
+          complete,
+        });
+        // 변경되기전
+        todos.value[index].complete = complete;
+        // 변경된후
+      } catch (err) {
+        error.value = "업데이트를 실패하였습니다." + err;
+      }
+    };
+
+    return {
+      // todo,
+      todos,
+      addToDo,
+      // onSubmit,
+      // hasError,
+      // todoStyle,
+      deleteTodo,
+      toggleTodo,
+      searchText,
+      filterTodos,
+      error,
+    };
+  },
+};
+</script>
+<style>
+#app {
+}
+
+.todoStyle {
+  text-decoration: line-through;
+  color: gray;
+}
+</style>
