@@ -21,74 +21,53 @@
       @toggle-todo="toggleTodo"
     />
     <!-- Pagination -->
-    <nav aria-label="Page navigation" style="margin-top: 10px">
-      <ul class="pagination">
-        <!-- 현재 1페이지라면 보여지지 않는다. 이전버튼은 -->
-        <li class="page-item" v-if="page !== 1">
-          <a
-            class="page-link"
-            style="cursor: pointer"
-            @click="getTodo(page - 1)"
-          >
-            <span aria-hidden="true">&laquo;</span>
-          </a>
-        </li>
-
-        <!-- 페이지 링크 -->
-        <li
-          class="page-item"
-          v-for="index in totalPage"
-          :key="index"
-          :class="page === index ? 'active' : ''"
-        >
-          <a
-            class="page-link"
-            style="cursor: pointer"
-            @click="getTodo(index)"
-            >{{ index }}</a
-          >
-        </li>
-
-        <!-- 마지막 페이지라면 출력안함 -->
-        <li class="page-item" v-if="page !== totalPage">
-          <a
-            class="page-link"
-            style="cursor: pointer"
-            @click="getTodo(page + 1)"
-          >
-            <span aria-hidden="true">&raquo;</span>
-          </a>
-        </li>
-      </ul>
-    </nav>
+    <PaginationView :page="page" :totalpage="totalPage" @:get-todo="getTodo" />
   </div>
 </template>
 <script>
 import axios from "axios";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import TodoForm from "./components/TodoSimpleForm.vue";
 import TodoList from "./components/TodoList.vue";
+import PaginationView from "./components/PaginationView.vue";
 export default {
   components: {
     TodoForm,
     TodoList,
+    PaginationView,
   },
   setup() {
     const todos = ref([]);
 
     // Pagination 구현
     // 전체목록수
-    const totalCout = ref(0);
+    const totalCount = ref(0);
     // 페이지당 보여줄 개수
     const limit = 5;
     // 현재페이지
     const page = ref(1);
     // 총페이지수c
     const totalPage = computed(() => {
-      return Math.ceil(totalCout.value / limit);
+      return Math.ceil(totalCount.value / limit);
     });
 
     const searchText = ref("");
+    //ref, reactive, computed, props 등이 변경될때 마다 실행
+    // watchEffect를 이용해줌
+
+    // watchEffect(() => {
+    //   console.log(page.value);
+    //   console.log(totalCount.value);
+    //   console.log(filterTodos.value);
+    //   console.log(totalPage.value);
+    // });
+
+    // 변하기 전의 값과 현재값을 동시에 감시함.
+    watch(searchText, () => {
+      // 검색기능은 추후보완할예정
+      // getTodo(1);
+    });
+
     const filterTodos = computed(() => {
       if (searchText.value) {
         return todos.value.filter((todo) => {
@@ -105,9 +84,9 @@ export default {
         );
         todos.value = response.data;
         // 총 목록수
-        totalCout.value = response.headers["x-total-count"];
+        totalCount.value = response.headers["x-total-count"];
         page.value = nowPage;
-        // totalPage.value = Math.ceil(totalCout.value / limit);
+        // totalPage.value = Math.ceil(totalCount.value / limit);
       } catch (err) {
         error.value = "서버 목록 호출에 실패했습니다. 잠시 뒤 이용해주세요.";
       }
@@ -139,7 +118,7 @@ export default {
         await axios.delete("http://localhost:3000/todos/" + id);
         todos.value.splice(index, 1);
         //목록갱신되었으므로 1페이지로 이동
-        getTodo(1);
+        getTodo(page.value);
       } catch (err) {
         error.value = "삭제 요청이 거부되었습니다.";
       }
