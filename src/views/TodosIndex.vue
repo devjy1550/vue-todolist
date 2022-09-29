@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <TitleBox />
+    <h2>Todo List</h2>
     <!-- 할일검색폼 -->
     <input
       class="form-control"
@@ -22,6 +22,8 @@
     />
     <!-- Pagination -->
     <PaginationView :page="page" :totalpage="totalPage" @get-todo="getTodo" />
+    <!-- 안내상자 -->
+    <ToastBox v-if="showToast" :message="toastMessage" :color="toastType" />
   </div>
 </template>
 
@@ -32,17 +34,19 @@ import TodoForm from "@/components/TodoSimpleForm.vue";
 import TodoList from "@/components/TodoList.vue";
 import PaginationView from "@/components/PaginationView.vue";
 import ErrorBox from "@/components/ErrorBox.vue";
-import TitleBox from "@/components/TitleBox.vue";
+import ToastBox from "@/components/ToastBox.vue";
+import { useToast } from "@/composibles/toast";
 export default {
   components: {
     TodoForm,
     TodoList,
     PaginationView,
     ErrorBox,
-    TitleBox,
+    ToastBox,
   },
   setup() {
     const todos = ref([]);
+
     // Pagination 구현
     // 전체목록수
     const totalCout = ref(0);
@@ -54,7 +58,9 @@ export default {
     const totalPage = computed(() => {
       return Math.ceil(totalCout.value / limit);
     });
+
     const searchText = ref("");
+
     // ref, reactive, computed, props 등이 변경될때 마다 실행
     // watchEffect 를 사용합니다.
     watchEffect(() => {
@@ -63,9 +69,11 @@ export default {
       // console.log(filterTodos.value);
       // console.log(totalPage.value);
     });
+
     // 변하기 전의 값 과 현재 값을 동시에 감시한다.
     // 연속으로 검색어를 무수하게 보내는 부분 일정수정
     let timeout = null;
+
     watch(searchText, () => {
       // 일정한 시간이 지나고 난 다음에 1번만 실행한다
       // 타이머를 없앤다.
@@ -75,6 +83,7 @@ export default {
         getTodo(1);
       }, 2000);
     });
+
     const filterTodos = computed(() => {
       if (searchText.value) {
         return todos.value.filter((todo) => {
@@ -83,6 +92,7 @@ export default {
       }
       return todos.value;
     });
+
     const getTodo = async (nowPage = page.value) => {
       try {
         const response = await axios.get(
@@ -92,11 +102,18 @@ export default {
         // 총 목록수
         totalCout.value = response.headers["x-total-count"];
         page.value = nowPage;
+        triggerToast("목록이 출력되었습니다.");
       } catch (err) {
         error.value = "서버 목록 호출에 실패했습니다. 잠시 뒤 이용해주세요.";
+        triggerToast(
+          "서버 목록 호출에 실패했습니다. 잠시 뒤 이용해주세요.",
+          "danger"
+        );
       }
     };
+
     getTodo();
+
     const error = ref("");
     const addTodo = async (todo) => {
       try {
@@ -108,10 +125,13 @@ export default {
         todos.value.push(todo);
         // 목록이 추가되면 1페이지로 이동
         getTodo(1);
+        triggerToast("목록이 저장되었습니다.");
       } catch (err) {
         error.value = "서버 데이터 저장 실패";
+        triggerToast("서버 데이터 저장 실패되었습니다.", "danger");
       }
     };
+
     const deleteTodo = async (index) => {
       try {
         // 현재 index 는 배열 인덱스 번호 0, 1,2,3,4, 가 전송된다.
@@ -121,10 +141,13 @@ export default {
         todos.value.splice(index, 1);
         // 목록이 추가되면 1페이지로 이동
         getTodo(page.value);
+        triggerToast("목록이 삭제 되었습니다.");
       } catch (err) {
         error.value = "삭제 요청이 거부되었습니다.";
+        triggerToast("삭제 요청이 거부되었습니다.", "danger");
       }
     };
+
     const toggleTodo = async (index) => {
       try {
         // 어느 데이터를 수정할 것인가를 전달
@@ -134,11 +157,34 @@ export default {
         await axios.patch("http://localhost:3000/todos/" + id, {
           complete,
         });
+
         todos.value[index].complete = complete;
+        triggerToast("업데이트에 성공하였습니다.");
       } catch (err) {
         error.value = "업데이트에 실패하였습니다.";
+        triggerToast("업데이트에 실패하였습니다.", "danger");
       }
     };
+
+    // 안내창 관련
+    // const toast = useToast();
+    const { showToast, toastMessage, toastType, triggerToast } = useToast();
+
+    // const toastMessage = ref("");
+    // const toastType = ref("");
+    // const showToast = ref(false);
+    // const toastTimer = ref(null);
+    // const triggerToast = (message, color = "success") => {
+    //   toastMessage.value = message;
+    //   toastType.value = color;
+    //   showToast.value = true;
+    //   toastTimer.value = setTimeout(() => {
+    //     toastMessage.value = "";
+    //     toastType.value = "";
+    //     showToast.value = false;
+    //   }, 3000);
+    // };
+
     return {
       todos,
       addTodo,
@@ -150,6 +196,10 @@ export default {
       totalPage,
       page,
       getTodo,
+
+      toastMessage,
+      showToast,
+      toastType,
     };
   },
 };
