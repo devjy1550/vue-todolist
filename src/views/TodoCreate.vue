@@ -1,8 +1,7 @@
 <template>
   <div class="container">
-    <h2>Todo View</h2>
-    <TodoForm :editing="true" />
-    <!-- <div id="test">code</div> -->
+    <h1>Todo Create</h1>
+    <TodoForm />
   </div>
 </template>
 
@@ -10,7 +9,9 @@
 import TodoForm from "@/components/TodoForm.vue";
 
 export default {
-  components: { TodoForm },
+  components: {
+    TodoForm,
+  },
   setup() {
     return {};
   },

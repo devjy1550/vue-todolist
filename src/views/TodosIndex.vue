@@ -1,6 +1,12 @@
 <template>
   <div class="container">
-    <h2>Todo List</h2>
+    <div class="d-flex justify-content-between mb-3 mt-3">
+      <h2>Todo List</h2>
+      <button class="btn btn-primary btn-sm" @click="moveToCreate">
+        Create Todo
+      </button>
+    </div>
+
     <!-- 할일검색폼 -->
     <input
       class="form-control"
@@ -9,7 +15,8 @@
       placeholder="Search"
     />
     <!-- 할일입력 -->
-    <TodoForm @add-todo="addTodo" style="margin-top: 10px" />
+    <TodoCreate />
+    <!-- <TodoForm @add-todo="addTodo" style="margin-top: 10px" /> -->
     <!-- 서버에러 출력 -->
     <ErrorBox :errtext="error" />
     <!-- 목록없음 안내 -->
@@ -30,15 +37,17 @@
 <script>
 import axios from "axios";
 import { computed, ref, watch, watchEffect } from "vue";
-import TodoForm from "@/components/TodoSimpleForm.vue";
+// import TodoForm from "@/components/TodoSimpleForm.vue";
 import TodoList from "@/components/TodoList.vue";
 import PaginationView from "@/components/PaginationView.vue";
 import ErrorBox from "@/components/ErrorBox.vue";
 import ToastBox from "@/components/ToastBox.vue";
-import { useToast } from "@/composibles/toast";
+import { useToast } from "@/composables/toast";
+import { useRouter } from "vue-router";
+
 export default {
   components: {
-    TodoForm,
+    // TodoForm,
     TodoList,
     PaginationView,
     ErrorBox,
@@ -185,6 +194,13 @@ export default {
     //   }, 3000);
     // };
 
+    const router = useRouter();
+    const moveToCreate = () => {
+      router.push({
+        name: "TodoCreate",
+      });
+    };
+
     return {
       todos,
       addTodo,
@@ -200,6 +216,7 @@ export default {
       toastMessage,
       showToast,
       toastType,
+      moveToCreate,
     };
   },
 };

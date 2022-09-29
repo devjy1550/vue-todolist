@@ -31,6 +31,21 @@
             >
           </li>
           <li class="nav-item">
+            <RouterLink class="nav-link" :to="{ name: 'TodoCreate' }"
+              >Create</RouterLink
+            >
+          </li>
+          <li class="nav-item">
+            <RouterLink class="nav-link" :to="{ name: 'Profile' }"
+              >Profile</RouterLink
+            >
+          </li>
+          <li class="nav-item">
+            <RouterLink class="nav-link" :to="{ name: 'About' }"
+              >About</RouterLink
+            >
+          </li>
+          <li class="nav-item">
             <a
               class="nav-link"
               href="https://github.com/devjy1550/vue-todolist"
