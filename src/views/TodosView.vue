@@ -1,7 +1,13 @@
 <template>
   <div class="container">
-    <h2>Todo View</h2>
-    <TodoForm :editing="true" />
+    <h2>Todo 수정</h2>
+    <TodoForm
+      :editing="true"
+      @update-todo="updateTodo"
+      @update-load-fail="updateLoadFail"
+      @update-todo-fail="updateTodoFail"
+      @err-subject="errSubject"
+    />
     <!-- <div id="test">code</div> -->
   </div>
 </template>
@@ -11,10 +17,36 @@ import TodoForm from "@/components/TodoForm.vue";
 
 export default {
   components: { TodoForm },
-  setup() {
-    return {};
+
+  emits: [
+    "update-todo-toast",
+    "update-load-fail-toast",
+    "update-todo-fail-toast",
+    "err-subject-toast",
+  ],
+
+  setup(props, { emit }) {
+    const updateTodo = () => {
+      // console.log("내용 업데이트");
+      emit("update-todo-toast", {});
+    };
+
+    const updateLoadFail = () => {
+      emit("update-load-fail-toast", {});
+    };
+
+    const updateTodoFail = () => {
+      emit("update-todo-fail-toast", {});
+    };
+    const errSubject = () => {
+      emit("err-subject-toast", {});
+    };
+    return { updateTodo, updateLoadFail, updateTodoFail, errSubject };
   },
 };
 </script>
 
 <style></style>
+
+// triggerToast( // "서버에러가 발생하였습니다. 잠시 뒤 시도해 주세요.", //
+"danger" // );
