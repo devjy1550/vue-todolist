@@ -3,12 +3,19 @@
     <div v-if="loading">Loading ...</div>
     <form v-else @submit.prevent="onSave">
       <div class="row">
+        <!-- 제목입력및 수정영역 -->
         <div class="col-6">
-          <div class="form-group">
+          <!-- <div class="form-group">
             <label>Todo Subject</label>
             <input type="text" class="form-control" v-model="todo.subject" />
             <div v-if="subjectError" style="color: red">{{ subjectError }}</div>
-          </div>
+          </div> -->
+          <InputView
+            label="제목"
+            :err="subjectError"
+            :subject="todo.subject"
+            @update-subject="updateSubject"
+          />
         </div>
         <!-- 내용 수정 -->
         <div v-if="editing" class="col-6">
@@ -59,10 +66,12 @@ import axios from "axios";
 import _ from "lodash";
 // import ToastBox from "@/components/ToastBox.vue";
 // import { useToast } from "@/composables/toast.js";
+import InputView from "@/components/InputView.vue";
 
 export default {
   components: {
     // ToastBox,
+    InputView,
   },
   props: {
     editing: {
@@ -173,6 +182,10 @@ export default {
     // 안내창 관련
     // const { showToast, toastMessage, toastType, triggerToast } = useToast();
 
+    const updateSubject = (value) => {
+      todo.value.subject = value;
+    };
+
     return {
       todo,
       loading,
@@ -184,6 +197,7 @@ export default {
       // showToast,
       // toastType,
       subjectError,
+      updateSubject,
     };
   },
 };
