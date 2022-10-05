@@ -141,9 +141,9 @@ export default {
       try {
         // 현재 index 는 배열 인덱스 번호 0, 1,2,3,4, 가 전송된다.
         // 실제 저장되어 있는 id 를 파악한다.
-        const id = todos.value[index].id;
+        const id = index;
         await axios.delete("http://localhost:3000/todos/" + id);
-        todos.value.splice(index, 1);
+        // todos.value.splice(index, 1);
         // 목록이 추가되면 1페이지로 이동
         getTodo(page.value);
 

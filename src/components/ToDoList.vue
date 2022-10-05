@@ -2,60 +2,93 @@
   <div>
     <div v-for="(item, index) in todos" v-bind:key="index" class="card mt-2">
       <div class="card-body p-2 d-flex">
-        <div
-          class="form-check flex-grow-1 align-items-center"
-          @click="moveToPage(item.id)"
-        >
+        <div class="form-check flex-grow-1 align-items-center">
           <input
             type="checkbox"
-            class="form-check-label"
-            :value="item.complete"
+            class="form-check-input"
+            :checked="item.complete"
             @change="toggleTodo(index)"
           />
           <label
+            @click="moveToPage(item.id)"
+            style="cusrsor: pointer"
             class="form-check-label"
-            v-bind:class="{ todoStyle: item.complete }"
+            v-bind:class="{ todostyle: item.complete }"
             >{{ item.subject }}
           </label>
-          <!--   v-bind:style="item.complete ? todoStyle : {}" -->
         </div>
         <div>
-          <button class="btn btn-danger btn-sm" @click="deleteTodo(index)">
+          <button class="btn btn-danger btn-sm" @click="openModal(item.id)">
             Delete
           </button>
         </div>
       </div>
     </div>
+
+    <teleport to="#modal">
+      <DeleteModal
+        v-if="showModal"
+        @close-modal="closeModal"
+        @delete="onDelete"
+      />
+    </teleport>
   </div>
 </template>
 
 <script>
+import { ref } from "vue";
 import { useRouter } from "vue-router";
+import DeleteModal from "@/components/DeleteModal.vue";
 export default {
+  components: {
+    DeleteModal,
+  },
   props: ["todos"],
-  setup(props, context) {
+  emits: ["delete-todo", "toggle-todo"],
+  setup(props, { emit }) {
     const deleteTodo = (index) => {
-      context.emit("delete-todo", index);
+      console.log(index);
+      emit("delete-todo", index);
     };
-
     const toggleTodo = (index) => {
-      context.emit("toggle-todo", index);
+      emit("toggle-todo", index);
     };
-
     const router = useRouter();
-
     const moveToPage = (id) => {
-      // router를 이용해서 id를 전송해줌.
-      // router.push("/todos/" + id);
+      // router 를 이용해서 id 를 전송해준다.
       // router.push(`/todos/${id}`);
       router.push({
         name: "Todo",
         params: {
-          id: id,
+          id,
         },
       });
     };
-    return { deleteTodo, toggleTodo, moveToPage };
+
+    // 모달 기능
+    const showModal = ref(false);
+    const deleteId = ref(null);
+    const openModal = (id) => {
+      deleteId.value = id;
+      showModal.value = true;
+    };
+    const closeModal = () => {
+      showModal.value = false;
+    };
+    const onDelete = () => {
+      deleteTodo(deleteId.value);
+      showModal.value = false;
+    };
+    return {
+      deleteTodo,
+      toggleTodo,
+      moveToPage,
+
+      showModal,
+      openModal,
+      closeModal,
+      onDelete,
+    };
   },
 };
 </script>
