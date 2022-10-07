@@ -65,7 +65,7 @@ import { computed, ref } from "vue";
 import axios from "@/api/axios";
 import _ from "lodash";
 // import ToastBox from "@/components/ToastBox.vue";
-// import { useToast } from "@/composables/toast.js";
+import { useToast } from "@/composables/toast.js";
 import InputView from "@/components/InputView.vue";
 
 export default {
@@ -80,14 +80,17 @@ export default {
     },
   },
   emits: [
-    "update-todo",
-    "new-todo",
-    "update-load-fail",
-    "update-todo-fail",
-    "new-todo-fail",
-    "err-subject",
+    // "update-todo",
+    // "new-todo",
+    // "update-load-fail",
+    // "update-todo-fail",
+    // "new-todo-fail",
+    // "err-subject",
   ],
-  setup(props, { emit }) {
+  setup(
+    props
+    //  { emit }
+  ) {
     const route = useRoute();
     const router = useRouter();
     // 데이터로딩 화면창 상태
@@ -107,11 +110,11 @@ export default {
         originalTodo.value = { ...response.data };
         loading.value = false;
       } catch (err) {
-        emit("err-load-fail", {});
-        // triggerToast(
-        //   "서버에러가 발생하였습니다. 잠시 뒤 시도해 주세요.",
-        //   "danger"
-        // );
+        // emit("err-load-fail", {});
+        triggerToast(
+          "서버에러가 발생하였습니다. 잠시 뒤 시도해 주세요.",
+          "danger"
+        );
       }
     };
     if (props.editing) {
@@ -134,8 +137,8 @@ export default {
         subjectError.value = "";
         if (!todo.value.subject) {
           subjectError.value = "제목을 입력하세요.";
-          emit("error-subject", {});
-          // triggerToast("제목을 입력하세요.", "danger");
+          // emit("error-subject", {});
+          triggerToast("제목을 입력하세요.", "danger");
           return;
         }
 
@@ -154,9 +157,9 @@ export default {
           );
           originalTodo.value = { ...res.data };
 
-          emit("update-todo", {});
+          // emit("update-todo", {});
 
-          // triggerToast("업데이트가 성공하였습니다.");
+          triggerToast("업데이트가 성공하였습니다.");
         } else {
           // 등록 axios 실행
           // res = await axios.post(`http://localhost:3000/todos`, data);
@@ -164,17 +167,19 @@ export default {
           todo.value.subject = "";
           todo.value.body = "";
 
-          emit("new-todo", {});
+          // emit("new-todo", {});
+          triggerToast("새글이 등록되었습니다.");
+
           // 내용이 입력되었으면 목록으로 보냄
           moveList();
         }
       } catch (err) {
         if (props.editing) {
-          emit("update-todo-fail", {});
-          // triggerToast("수정에 실패했습니다.", "danger");
+          // emit("update-todo-fail", {});
+          triggerToast("수정에 실패했습니다.", "danger");
         } else {
-          emit("new-todo-fail", {});
-          // triggerToast("등록에 실패했습니다.", "danger");
+          // emit("new-todo-fail", {});
+          triggerToast("등록에 실패했습니다.", "danger");
         }
       }
     };
@@ -183,7 +188,7 @@ export default {
       return _.isEqual(todo.value, originalTodo.value);
     });
     // 안내창 관련
-    // const { showToast, toastMessage, toastType, triggerToast } = useToast();
+    const { showToast, toastMessage, toastType, triggerToast } = useToast();
 
     const updateSubject = (value) => {
       todo.value.subject = value;

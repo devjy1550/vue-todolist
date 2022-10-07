@@ -5,6 +5,7 @@ import TodosView from "../views/TodosView.vue";
 import ProfileIndex from "../views/ProfileIndex.vue";
 import AboutIndex from "../views/AboutIndex.vue";
 import CreateIndex from "../views/TodoCreate.vue";
+import Kakao from "../views/KakaoLogin.vue";
 
 const routes = [
   {
@@ -36,6 +37,11 @@ const routes = [
     path: "/create",
     name: "TodoCreate",
     component: CreateIndex,
+  },
+  {
+    path: "/login",
+    name: "Login",
+    component: Kakao,
   },
 ];
 
